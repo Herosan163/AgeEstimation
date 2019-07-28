@@ -32,7 +32,7 @@ python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 
 ```
 
 ### Comparison of mean-variance loss with softmax cross entropy
-![MAE](https://github.com/Herosan163/AgeEstimation/tree/images/MeanAbsoluteError.png)
+![MeanAbsoluteError](https://user-images.githubusercontent.com/53385884/62007659-3dfbe680-b18b-11e9-800a-c8f9fa9189d5.png)
 
 ### Differences between this implementation and original a paper.
 - In the original paper, AlexNet and VGG-16 are used as feature extractors. On the other hand, ResNet34 is used in this program.
