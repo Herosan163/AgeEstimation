@@ -25,7 +25,10 @@ URL: http://yanweifu.github.io/FG_NET_data/FGNET.zip
 
 2. Start training
 ```
-python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 --learning_rate 0.002 --epoch 150 --result_directory result
+python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 --learning_rate 0.002 --epoch 100 --result_directory result
+
+--leave_subject: a subject index for test data (1~82). (integer)
+--result_directory: a directory where the model will be saved.
 ```
 
 ### Differences between this implementation and original a paper.
