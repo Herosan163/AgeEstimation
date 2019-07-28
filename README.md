@@ -31,6 +31,9 @@ python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 
 --result_directory: a directory where the model will be saved.
 ```
 
+### Comparison of mean-variance loss with softmax cross entropy
+
+
 ### Differences between this implementation and original a paper.
 - In the original paper, AlexNet and VGG-16 are used as feature extractors. On the other hand, ResNet34 is used in this program.
 - In the original paper, all the face images are aligned based on five facial landmarks detected using an open-source SeetaFaceEngine [2]. In this program, no alignment is done.
