@@ -35,4 +35,5 @@ python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 
 
 ## References
 [1] H. Pan, et al. "Mean-Variance Loss for Deep Age Estimation from a Face." Proceedings of CVPR, 2018.
+
 [2] https://github.com/seetaface/SeetaFaceEngine
