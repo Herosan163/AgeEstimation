@@ -12,6 +12,10 @@ Tested on:
 - CPU: Intel Broadwell, GPU: NVIDIA Tesla K80
 
 ## Usage
+### Setting
+- I follow a widely used leave-one-person-out (LOPO) protocol in my experiments. Images of a person is used as test data, images of the others is used as training and validation data. Ratio of validation data to training and validation data is set as "VALIDATION_RATE= 0.1" in "main.py".
+- To converge less epoch, in the first 10 epochs, parameters of only full connected layers is updated. 
+
 ### Training
 1. Prepare a FG-NET dataset.
 DataLoaders of this program load images from a FG-NET dataset. A image filename of the FG-NET is prefixed by a subject index and contains a age label. So subject indices and labels are extracted from filenames.
@@ -29,3 +33,4 @@ python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 
 
 ## References
 [1] H. Pan, et al. "Mean-Variance Loss for Deep Age Estimation from a Face." Proceedings of CVPR, 2018.
+[2] https://github.com/seetaface/SeetaFaceEngine
