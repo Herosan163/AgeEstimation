@@ -32,7 +32,8 @@ python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 
 ```
 
 ### Comparison of mean-variance loss with softmax cross entropy
-![MeanAbsoluteError](https://user-images.githubusercontent.com/53385884/62007659-3dfbe680-b18b-11e9-800a-c8f9fa9189d5.png)
+We see that MAE on validation and test data of mean-variance loss and softmax cross entropy loss is better than that of softmax cross entropy loss only.
+![Figure_1](https://user-images.githubusercontent.com/53385884/62007786-ae573780-b18c-11e9-9b87-b56bc4b6a014.png)
 
 ### Differences between this implementation and original a paper.
 - In the original paper, AlexNet and VGG-16 are used as feature extractors. On the other hand, ResNet34 is used in this program.
