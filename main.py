@@ -22,7 +22,6 @@ LAMBDA_2 = 0.05
 START_AGE = 0
 END_AGE = 69
 VALIDATION_RATE= 0.1
-START_SOFTMAX_EPOCH = 50
 
 random.seed(2019)
 np.random.seed(2019)
@@ -40,7 +39,7 @@ def ResNet34(num_classes):
     return model
 
 
-def train(train_loader, model, criterion1, criterion2, optimizer, epoch, softmax_epoch, result_directory):
+def train(train_loader, model, criterion1, criterion2, optimizer, epoch, result_directory):
 
     model.train()
     running_loss = 0.
@@ -53,18 +52,15 @@ def train(train_loader, model, criterion1, criterion2, optimizer, epoch, softmax
         labels = sample['label'].cuda()
         output = model(images)
         mean_loss, variance_loss = criterion1(output, labels)
-        if softmax_epoch <= epoch:
-            softmax_loss = criterion2(output, labels)
-            loss = mean_loss + variance_loss + softmax_loss
-            running_softmax_loss += softmax_loss.data
-        else:
-            loss = mean_loss + variance_loss
+        softmax_loss = criterion2(output, labels)
+        loss = mean_loss + variance_loss + softmax_loss
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         running_loss += loss.data
         running_mean_loss += mean_loss.data
         running_variance_loss += variance_loss.data
+        running_softmax_loss += softmax_loss.data
         if (i + 1) % interval == 0:
             print('[%d, %5d] mean_loss: %.3f, variance_loss: %.3f, softmax_loss: %.3f, loss: %.3f'
                   % (epoch, i, running_mean_loss / interval,
@@ -228,7 +224,7 @@ def main():
             for param in model.parameters():
                 param.requires_grad = True
         scheduler.step(epoch)
-        train(train_loader, model, criterion1, criterion2, optimizer, epoch, START_SOFTMAX_EPOCH, args.result_directory)
+        train(train_loader, model, criterion1, criterion2, optimizer, epoch, args.result_directory)
         mean_loss, variance_loss, softmax_loss, loss_val, mae = evaluate(val_loader, model, criterion1, criterion2)
         mae_test = test(test_loader, model)
         print('epoch: %d, mean_loss: %.3f, variance_loss: %.3f, softmax_loss: %.3f, loss: %.3f, mae: %3f' %
