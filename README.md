@@ -19,7 +19,7 @@ Tested on:
 
 ### Training
 1. Prepare a FG-NET dataset.
-DataLoaders of this program load images from a FG-NET dataset. A image filename of the FG-NET is prefixed by a subject index and contains a age label. So subject indices and labels are extracted from filenames.
+DataLoaders of this program load images from a FG-NET dataset. A image filename of the FG-NET is prefixed by a subject index and contains a age label. Thus subject indices and labels are extracted from filenames.
 
 URL: http://yanweifu.github.io/FG_NET_data/FGNET.zip
 
