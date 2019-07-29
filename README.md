@@ -32,7 +32,7 @@ python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 
 ```
 
 ### Comparison of mean-variance loss with softmax cross entropy
-We see that MAE on validation and test data of mean-variance loss and softmax cross entropy loss is better than that of softmax cross entropy loss only.
+The following figure shows Mean Absolute Error (MAE) when the subject #1 is chosen as test data. We see that MAE on validation and test data of mean-variance loss and softmax cross entropy loss is better than that of softmax cross entropy loss only.
 ![Figure_1](https://user-images.githubusercontent.com/53385884/62007786-ae573780-b18c-11e9-9b87-b56bc4b6a014.png)
 
 ### Differences between this implementation and original a paper.
