@@ -92,8 +92,6 @@ def evaluate(val_loader, model, criterion1, criterion2):
             image = sample['image'].cuda()
             label = sample['label'].cuda()
             output = model(image)
-            m = nn.Softmax(dim=1)
-            output = m(output)
             mean_loss, variance_loss = criterion1(output, label)
             softmax_loss = criterion2(output, label)
             loss = mean_loss + variance_loss + softmax_loss
@@ -101,8 +99,10 @@ def evaluate(val_loader, model, criterion1, criterion2):
             mean_loss_val += mean_loss.data
             variance_loss_val += variance_loss.data
             softmax_loss_val += softmax_loss.data
+            m = nn.Softmax(dim=1)
+            output_softmax = m(output)
             a = torch.arange(START_AGE, END_AGE + 1, dtype=torch.float32).cuda()
-            mean = (output * a).sum(1, keepdim=True).cpu().data.numpy()
+            mean = (output_softmax * a).sum(1, keepdim=True).cpu().data.numpy()
             pred = np.around(mean)
             mae += np.absolute(pred - sample['label'].cpu().data.numpy())
     return mean_loss_val / len(val_loader),\
