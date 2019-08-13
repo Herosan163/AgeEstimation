@@ -208,7 +208,7 @@ def main():
     criterion2 = torch.nn.CrossEntropyLoss().cuda()
 
     # scheduler = lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
-    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[120], gamma=0.1)
+    scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[70, 90], gamma=0.1)
 
     for param in model.parameters():
         param.requires_grad = False
