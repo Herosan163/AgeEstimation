@@ -41,8 +41,8 @@ The following figure shows Mean Absolute Error (MAE) when the subject #1 is chos
 python main.py -pi FGNET/images/001A43a.JPG -pm result/model_best_loss
 ```
 The following figures show the results of the subject #1, who I choosed as test data.
-![001A02_result](https://user-images.githubusercontent.com/53385884/63864383-b522d580-c9ea-11e9-88bb-096a77793d38.jpg)
-![001A43a_result](https://user-images.githubusercontent.com/53385884/63864419-c5d34b80-c9ea-11e9-91c4-d0474d6a7e11.jpg)
+![001A02_result](https://user-images.githubusercontent.com/53385884/63864860-878a5c00-c9eb-11e9-9f99-b0973f5da425.jpg)
+![001A43a_result](https://user-images.githubusercontent.com/53385884/63864861-89541f80-c9eb-11e9-8102-b16cdb0d0571.jpg)
 
 ### Differences between this implementation and original a paper.
 - In the original paper, AlexNet and VGG-16 are used as feature extractors. On the other hand, ResNet34 is used in this program.
