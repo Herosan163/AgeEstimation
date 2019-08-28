@@ -7,6 +7,7 @@ This is a PyTorch implementation of mean-variance loss [1] and softmax loss embe
 - Pillow 5.4+
 - NumPy 1.16+
 - TorchVision 0.2+
+- OpenCV 4.1.1+
 
 Tested on:
 - Ubuntu 18.04, CUDA 10.1
@@ -29,6 +30,11 @@ python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 
 
 --leave_subject: a subject index for test data (1~82). (integer)
 --result_directory: a directory where the model will be saved.
+```
+
+### Inference
+```
+python main.py -pi FGNET/images/001A43a.JPG -pm result/model_best_loss
 ```
 
 ### Comparison of mean-variance loss with softmax cross entropy
