@@ -41,6 +41,7 @@ The following figure shows Mean Absolute Error (MAE) when the subject #1 is chos
 python main.py -pi FGNET/images/001A43a.JPG -pm result/model_best_loss
 ```
 The following figures show the results of the subject #1, who I choosed as test data.
+
 ![001A02_result](https://user-images.githubusercontent.com/53385884/63864860-878a5c00-c9eb-11e9-9f99-b0973f5da425.jpg)
 ![001A43a_result](https://user-images.githubusercontent.com/53385884/63864861-89541f80-c9eb-11e9-8102-b16cdb0d0571.jpg)
 
