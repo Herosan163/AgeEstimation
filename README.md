@@ -24,6 +24,7 @@ DataLoaders of this program load images from a FG-NET dataset. A image filename 
 URL: http://yanweifu.github.io/FG_NET_data/FGNET.zip
 
 2. Start training
+
 Mean-Variance Loss
 ```
 python main.py --batch_size 64 --image_directory FGNET/images --leave_subject 1 --learning_rate 0.001 --epoch 100 --result_directory result/mean_variance -loss
