@@ -29,7 +29,7 @@ np.random.seed(2019)
 torch.manual_seed(2019)
 
 
-def ResNet34(num_classes):
+def ResNet18(num_classes):
 
     model = resnet18(pretrained=True)
     model.fc = nn.Sequential(
@@ -268,7 +268,7 @@ def main():
         test_gen = FaceDataset(test_filepath_list, transforms)
         test_loader = DataLoader(test_gen, batch_size=1, shuffle=False, pin_memory=True, num_workers=8)
 
-        model = ResNet34(END_AGE - START_AGE + 1)
+        model = ResNet18(END_AGE - START_AGE + 1)
         model.cuda()
 
         optimizer = optim.Adam(model.parameters(), lr = args.learning_rate)
