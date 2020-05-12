@@ -14,7 +14,7 @@ from collections import OrderedDict
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
-from torchvision.models.resnet import resnet34
+from torchvision.models.resnet import resnet18
 from mean_variance_loss import MeanVarianceLoss
 import cv2
 
@@ -31,7 +31,7 @@ torch.manual_seed(2019)
 
 def ResNet34(num_classes):
 
-    model = resnet34(pretrained=True)
+    model = resnet18(pretrained=True)
     model.fc = nn.Sequential(
         nn.BatchNorm1d(512),
         nn.Dropout(0.5),
@@ -59,9 +59,9 @@ def train(train_loader, model, criterion1, criterion2, optimizer, epoch, result_
         loss.backward()
         optimizer.step()
         running_loss += loss.data
+        running_softmax_loss += softmax_loss.data
         running_mean_loss += mean_loss.data
         running_variance_loss += variance_loss.data
-        running_softmax_loss += softmax_loss.data
         if (i + 1) % interval == 0:
             print('[%d, %5d] mean_loss: %.3f, variance_loss: %.3f, softmax_loss: %.3f, loss: %.3f'
                   % (epoch, i, running_mean_loss / interval,
@@ -78,6 +78,30 @@ def train(train_loader, model, criterion1, criterion2, optimizer, epoch, result_
             running_mean_loss = 0.
             running_variance_loss = 0.
             running_softmax_loss = 0.
+
+
+def train_softmax(train_loader, model, criterion2, optimizer, epoch, result_directory):
+
+    model.train()
+    running_loss = 0.
+    running_softmax_loss = 0.
+    interval = 1
+    for i, sample in enumerate(train_loader):
+        images = sample['image'].cuda()
+        labels = sample['label'].cuda()
+        output = model(images)
+        loss = criterion2(output, labels)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        running_loss += loss.data
+        if (i + 1) % interval == 0:
+            print('[%d, %5d] loss: %.3f'
+                  % (epoch, i, running_loss / interval))
+            with open(os.path.join(result_directory, 'log'), 'a') as f:
+                f.write('[%d, %5d] loss: %.3f\n'
+                        % (epoch, i, running_loss / interval))
+            running_loss = 0.
 
 
 def evaluate(val_loader, model, criterion1, criterion2):
@@ -111,6 +135,28 @@ def evaluate(val_loader, model, criterion1, criterion2):
         softmax_loss_val / len(val_loader),\
         loss_val / len(val_loader),\
         mae / len(val_loader)
+
+
+def evaluate_softmax(val_loader, model, criterion2):
+    model.cuda()
+    model.eval()
+    loss_val = 0.
+    softmax_loss_val = 0.
+    mae = 0.
+    with torch.no_grad():
+        for i, sample in enumerate(val_loader):
+            image = sample['image'].cuda()
+            label = sample['label'].cuda()
+            output = model(image)
+            loss = criterion2(output, label)
+            loss_val += loss.data
+            m = nn.Softmax(dim=1)
+            output_softmax = m(output)
+            a = torch.arange(START_AGE, END_AGE + 1, dtype=torch.float32).cuda()
+            mean = (output_softmax * a).sum(1, keepdim=True).cpu().data.numpy()
+            pred = np.around(mean)
+            mae += np.absolute(pred - sample['label'].cpu().data.numpy())
+    return loss_val / len(val_loader), mae / len(val_loader)
 
 
 def test(test_loader, model):
@@ -183,6 +229,7 @@ def get_args():
     parser.add_argument('-rd', '--result_directory', type=str, default=None)
     parser.add_argument('-pi', '--pred_image', type=str, default=None)
     parser.add_argument('-pm', '--pred_model', type=str, default=None)
+    parser.add_argument('-loss', '--is_mean_variance', action='store_true')
     return parser.parse_args()
 
 
@@ -224,36 +271,36 @@ def main():
         model = ResNet34(END_AGE - START_AGE + 1)
         model.cuda()
 
-        optimizer = optim.SGD(model.parameters(), lr = args.learning_rate, momentum=0.9, weight_decay=1e-4)
-        criterion1 = MeanVarianceLoss(LAMBDA_2, LAMBDA_1, START_AGE, END_AGE).cuda()
+        optimizer = optim.Adam(model.parameters(), lr = args.learning_rate)
+        criterion1 = MeanVarianceLoss(LAMBDA_1, LAMBDA_2, START_AGE, END_AGE).cuda()
         criterion2 = torch.nn.CrossEntropyLoss().cuda()
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[80], gamma=0.1)
 
-        # scheduler = lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
-        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[40, 60], gamma=0.1)
-
-        for param in model.parameters():
-            param.requires_grad = False
-        for param in model.fc.parameters():
-            param.requires_grad = True
 
         best_val_mae = np.inf
         best_val_loss = np.inf
         best_mae_epoch = -1
         best_loss_epoch = -1
         for epoch in range(args.epoch):
-            if epoch == 10:
-                for param in model.parameters():
-                    param.requires_grad = True
             scheduler.step(epoch)
-            train(train_loader, model, criterion1, criterion2, optimizer, epoch, args.result_directory)
-            mean_loss, variance_loss, softmax_loss, loss_val, mae = evaluate(val_loader, model, criterion1, criterion2)
+            if args.is_mean_variance:
+                train(train_loader, model, criterion1, criterion2, optimizer, epoch, args.result_directory)
+                mean_loss, variance_loss, softmax_loss, loss_val, mae = evaluate(val_loader, model, criterion1, criterion2)
+                print('epoch: %d, mean_loss: %.3f, variance_loss: %.3f, softmax_loss: %.3f, loss: %.3f, mae: %3f' %
+                      (epoch, mean_loss, variance_loss, softmax_loss, loss_val, mae))
+                with open(os.path.join(args.result_directory, 'log'), 'a') as f:
+                    f.write('epoch: %d, mean_loss: %.3f, variance_loss: %.3f, softmax_loss: %.3f, loss: %.3f, mae: %3f\n' %
+                        (epoch, mean_loss, variance_loss, softmax_loss, loss_val, mae))
+            else:
+                train_softmax(train_loader, model, criterion2, optimizer, epoch, args.result_directory)
+                loss_val, mae = evaluate_softmax(val_loader, model, criterion2)
+                print('epoch: %d, loss: %.3f, mae: %3f' % (epoch, loss_val, mae))
+                with open(os.path.join(args.result_directory, 'log'), 'a') as f:
+                    f.write('epoch: %d, loss: %.3f, mae: %3f\n' % (epoch, loss_val, mae))
+
             mae_test = test(test_loader, model)
-            print('epoch: %d, mean_loss: %.3f, variance_loss: %.3f, softmax_loss: %.3f, loss: %.3f, mae: %3f' %
-                  (epoch, mean_loss, variance_loss, softmax_loss, loss_val, mae))
             print('epoch: %d, test_mae: %3f' % (epoch, mae_test))
             with open(os.path.join(args.result_directory, 'log'), 'a') as f:
-                f.write('epoch: %d, mean_loss: %.3f, variance_loss: %.3f, softmax_loss: %.3f, loss: %.3f, mae: %3f\n' %
-                        (epoch, mean_loss, variance_loss, softmax_loss, loss_val, mae))
                 f.write('epoch: %d, mae_test: %3f\n' % (epoch, mae_test))
             if best_val_mae > mae:
                 best_val_mae = mae
@@ -263,11 +310,12 @@ def main():
                 best_val_loss = loss_val
                 best_loss_epoch = epoch
                 torch.save(model.state_dict(), os.path.join(args.result_directory, "model_best_loss"))            
-            with open(os.path.join(args.result_directory, 'log'), 'a') as f:
-                f.write('best_loss_epoch: %d, best_val_loss: %f, best_mae_epoch: %d, best_val_mae: %f\n'
-                        % (best_loss_epoch, best_val_loss, best_mae_epoch, best_val_mae))
-            print('best_loss_epoch: %d, best_val_loss: %f, best_mae_epoch: %d, best_val_mae: %f'
-                  % (best_loss_epoch, best_val_loss, best_mae_epoch, best_val_mae))
+        with open(os.path.join(args.result_directory, 'log'), 'a') as f:
+            f.write('best_loss_epoch: %d, best_val_loss: %f, best_mae_epoch: %d, best_val_mae: %f\n'
+                    % (best_loss_epoch, best_val_loss, best_mae_epoch, best_val_mae))
+        print('best_loss_epoch: %d, best_val_loss: %f, best_mae_epoch: %d, best_val_mae: %f'
+              % (best_loss_epoch, best_val_loss, best_mae_epoch, best_val_mae))
+
     if args.pred_image and args.pred_model:
         model = ResNet34(END_AGE - START_AGE + 1)
         model.cuda()
